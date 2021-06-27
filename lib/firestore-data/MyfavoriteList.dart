@@ -1,25 +1,39 @@
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fastpnt/Screens/DetailPageMedcin.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:typicons_flutter/typicons_flutter.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-class TopRatedList extends StatefulWidget {
+class ListFav extends StatefulWidget {
   @override
   _TopRatedListState createState() => _TopRatedListState();
 }
 
-class _TopRatedListState extends State<TopRatedList> {
+class _TopRatedListState extends State<ListFav> {
+  FirebaseAuth _auth = FirebaseAuth.instance;
+  User user;
+  String _documentID;
 
+  Future<void> _getUser() async {
+    user = _auth.currentUser;
+  }
   @override
+  void initState() {
+    super.initState();
+    _getUser();
+  }
   Widget build(BuildContext context) {
     return SafeArea(
       child: StreamBuilder(
-        stream:FirebaseFirestore.instance
-            .collection('Medcin').
-        orderBy('name')./*.where('name',isGreaterThanOrEqualTo: widget.searchKey)*/
-        snapshots(),
-        
+        stream: FirebaseFirestore.instance
+            .collection('favorite') .doc(user.email.toString())
+            .collection('list')
+            .orderBy('docname')
+            .snapshots(),
+        /*.orderBy('name', descending: true)*/
+
         builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
           if (!snapshot.hasData)
             return Center(
@@ -29,7 +43,7 @@ class _TopRatedListState extends State<TopRatedList> {
             scrollDirection: Axis.vertical,
             physics: ClampingScrollPhysics(),
             shrinkWrap: true,
-            itemCount: snapshot.data.size,
+         itemCount: 2,
             itemBuilder: (context, index) {
               DocumentSnapshot doctor = snapshot.data.docs[index];
               return Padding(
@@ -50,7 +64,7 @@ class _TopRatedListState extends State<TopRatedList> {
                           context,
                           MaterialPageRoute(
                             builder: (context) => DetailPage(
-                              doctor: doctor['name'],
+                              doctor: doctor['docname'],
                             ),
                           ),
                         );
@@ -59,11 +73,11 @@ class _TopRatedListState extends State<TopRatedList> {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         //mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
-                          CircleAvatar(
+                        /*  CircleAvatar(
                             backgroundImage: NetworkImage(doctor['img']),
                             //backgroundColor: Colors.blue,
                             radius: 25,
-                          ),
+                          ),*/
                           SizedBox(
                             width: 20,
                           ),
@@ -72,18 +86,18 @@ class _TopRatedListState extends State<TopRatedList> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
-                                doctor['name'],
+                                doctor['docname'],
                                 style: GoogleFonts.lato(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 17,
                                   color: Colors.black87,
                                 ),
                               ),
-                              Text(
+                             /* Text(
                                 doctor['specialite'],
                                 style: GoogleFonts.lato(
                                     fontSize: 16, color: Colors.black54),
-                              ),
+                              ),*/
                             ],
                           ),
                           SizedBox(
@@ -103,7 +117,7 @@ class _TopRatedListState extends State<TopRatedList> {
                                   ),
                                   SizedBox(width: 3,),
                                   Text(
-                                   /* doctor['phone'].toString()*/"",
+                                    /* doctor['phone'].toString()*/"",
                                     style: GoogleFonts.lato(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 15,

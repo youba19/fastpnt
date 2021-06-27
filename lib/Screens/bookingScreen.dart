@@ -10,8 +10,9 @@ import 'home.dart';
 import 'myAppointments.dart';
 class BookingScreen extends StatefulWidget {
   final String doctor;
-
-  const BookingScreen({Key key, this.doctor}) : super(key: key);
+  final String email;
+   final int nb;
+  const BookingScreen({Key key, this.doctor, this.email,this.nb}) : super(key: key);
   @override
   _BookingScreenState createState() => _BookingScreenState();
 }
@@ -30,7 +31,7 @@ class _BookingScreenState extends State<BookingScreen> {
   FocusNode f3 = FocusNode();
   FocusNode f4 = FocusNode();
   FocusNode f5 = FocusNode();
-
+  String _documentID;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   DateTime selectedDate = DateTime.now();
   TimeOfDay currentTime = TimeOfDay.now();
@@ -96,7 +97,7 @@ class _BookingScreenState extends State<BookingScreen> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) =>Home(),
+            builder: (context) => MyAppointments(email:widget.email),
           ),
         );
       },
@@ -127,12 +128,54 @@ class _BookingScreenState extends State<BookingScreen> {
       },
     );
   }
+  Future<void> deleteAppointment(String docID) {
+    FirebaseFirestore.instance
+        .collection('appointments-doc')
+        .doc(docID)
+        .delete()  ;
+
+
+
+  }
+
+  String _dateFormatter(String _timestamp) {
+    String formattedDate =
+    DateFormat('dd-MM-yyyy').format(DateTime.parse(_timestamp));
+    return formattedDate;
+  }
+
+  String _timeFormatter(String _timestamp) {
+    String formattedTime =
+    DateFormat('kk:mm').format(DateTime.parse(_timestamp));
+    return formattedTime;
+  }
+
+
+
+  _checkDiff(DateTime _date) {
+    var diff = DateTime.now().difference(_date).inHours;
+    if (diff > 2) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  _compareDate(String _date) {
+    if (_dateFormatter(DateTime.now().toString())
+        .compareTo(_dateFormatter(_date)) ==
+        0) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
 
   @override
   void initState() {
     super.initState();
     _getUser();
-    selectTime(context);
     _doctorController.text = widget.doctor;
   }
 
@@ -165,12 +208,128 @@ class _BookingScreenState extends State<BookingScreen> {
           child: ListView(
             shrinkWrap: true,
             children: [
-              Container(
+              Expanded(
+                child: StreamBuilder(
+
+
+                  stream: FirebaseFirestore.instance
+                      .collection('appointments-doc').doc(widget.email).collection('all-doc')
+                      .where('email',isEqualTo: widget.email).where('valide',isEqualTo: true)
+                  // .orderBy('date')
+                      .snapshots(),
+
+                  builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                    if (!snapshot.hasData) {
+                      return Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    }
+                    return snapshot.data.size == 0
+                        ? Center(
+                      child: Text(
+                        'Ce Medcin n a pas de RDV',
+                        style: GoogleFonts.lato(
+                          color: Colors.grey,
+                          fontSize: 18,
+                        ),
+                      ),
+                    )
+                        : ExpansionTile(
+                      title: Text("Voire Les heure Reserver"
+                      ,style: TextStyle(
+                          fontWeight: FontWeight.bold,color: Colors.red
+                        ),),
+                          children:[
+                            Container(
+
+                            child: ListView.builder(
+                      scrollDirection: Axis.vertical,
+                      physics: ClampingScrollPhysics(),
+                      shrinkWrap: true,
+                      itemCount: snapshot.data.size,
+                      itemBuilder: (context, index) {
+                            DocumentSnapshot document = snapshot.data.docs[index];
+                            print(_compareDate(document['date'].toDate().toString()));
+                            if (_checkDiff(document['date'].toDate())) {
+                              deleteAppointment(document.id);
+                              print("suuppppp");
+                            }
+                            return GestureDetector(
+                              child: Card(
+
+                                elevation: 2,
+                                child: InkWell(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => BookingScreen(
+                                          doctor: document['name'],
+                                          nb:1,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  child: ExpansionTile(
+                                    title: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.only(left: 5),
+                                          child: Text(
+                                            document['doctor'],
+                                            style: GoogleFonts.lato(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                        Text(
+                                          "Time: " +
+                                              _timeFormatter(
+                                                document['date']
+                                                    .toDate()
+                                                    .toString(),
+                                              ),
+                                          style: GoogleFonts.lato(
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                        Text(
+                                          _compareDate(
+                                              document['date'].toDate().toString())
+                                              ? "TODAY"
+                                              : "                 ",
+                                          style: GoogleFonts.lato(
+                                              color: Colors.green,
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        SizedBox(
+                                          width: 0,
+                                        ),
+                                      ],
+                                    ),
+
+
+
+                                  ),
+                                ),
+                              ),
+                            );
+                      },
+                    ),
+                          )],
+                        );
+                  },
+                ),
+              ),
+            /*  Container(
                 child: Image(
                   image: AssetImage('assets/appointment.jpg'),
                   height: 250,
                 ),
-              ),
+              ),*/
               SizedBox(
                 height: 10,
               ),
@@ -214,7 +373,7 @@ class _BookingScreenState extends State<BookingScreen> {
                             borderSide: BorderSide.none,
                           ),
                           filled: true,
-                          fillColor: Colors.grey[350],
+                          fillColor: Colors.grey[300],
                           hintText: 'Patient Name*',
                           hintStyle: GoogleFonts.lato(
                             color: Colors.black26,
@@ -246,8 +405,8 @@ class _BookingScreenState extends State<BookingScreen> {
                             borderSide: BorderSide.none,
                           ),
                           filled: true,
-                          fillColor: Colors.grey[350],
-                          hintText: 'Mobile',
+                          fillColor: Colors.grey[300],
+                          hintText: 'Mobile*',
                           hintStyle: GoogleFonts.lato(
                             color: Colors.black26,
                             fontSize: 18,
@@ -287,7 +446,7 @@ class _BookingScreenState extends State<BookingScreen> {
                             borderSide: BorderSide.none,
                           ),
                           filled: true,
-                          fillColor: Colors.grey[350],
+                          fillColor: Colors.grey[300],
                           hintText: 'Description',
                           hintStyle: GoogleFonts.lato(
                             color: Colors.black26,
@@ -321,7 +480,7 @@ class _BookingScreenState extends State<BookingScreen> {
                             borderSide: BorderSide.none,
                           ),
                           filled: true,
-                          fillColor: Colors.grey[350],
+                          fillColor: Colors.grey[300],
                           hintText: 'Doctor Name*',
                           hintStyle: GoogleFonts.lato(
                             color: Colors.black26,
@@ -354,7 +513,7 @@ class _BookingScreenState extends State<BookingScreen> {
                                   borderSide: BorderSide.none,
                                 ),
                                 filled: true,
-                                fillColor: Colors.grey[350],
+                                fillColor: Colors.grey[300],
                                 hintText: 'Select Date*',
                                 hintStyle: GoogleFonts.lato(
                                   color: Colors.black26,
@@ -425,7 +584,7 @@ class _BookingScreenState extends State<BookingScreen> {
                                   borderSide: BorderSide.none,
                                 ),
                                 filled: true,
-                                fillColor: Colors.grey[350],
+                                fillColor: Colors.grey[300],
                                 hintText: 'Select Time*',
                                 hintStyle: GoogleFonts.lato(
                                   color: Colors.black26,
@@ -486,20 +645,28 @@ class _BookingScreenState extends State<BookingScreen> {
                               borderRadius: BorderRadius.circular(32.0),
                             ),
                           ),
-                          onPressed: () {
+                          onPressed: widget.nb==0? () {
+
                             if (_formKey.currentState.validate()) {
                               print(_nameController.text);
                               print(_dateController.text);
                               print(widget.doctor);
                               showAlertDialog(context);
                               _createAppointment();
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => MainPage()));
                             }
+                          }:(){
+                            showAlertDialog(context);
+                            _Update();
                           },
-                          child: Text(
-                            "Book Appointment",
+                          child:widget.nb==1 ? Text(
+                            "Modifier RDV",
+                            style: GoogleFonts.lato(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ):Text(
+                            "Crée RDV",
                             style: GoogleFonts.lato(
                               color: Colors.white,
                               fontSize: 18,
@@ -522,34 +689,87 @@ class _BookingScreenState extends State<BookingScreen> {
     );
   }
 
-
   Future<void> _createAppointment() async {
     print(dateUTC + ' ' + date_Time + ':00');
     FirebaseFirestore.instance
         .collection('appointments')
         .doc(user.email)
         .collection('pending')
-        .doc()
-        .set({
-      'name': _nameController.text,
-      'phone': _phoneController.text,
-      'description': _descriptionController.text,
-      'doctor': _doctorController.text,
-      'date': DateTime.parse(dateUTC + ' ' + date_Time + ':00'),
-    },
-        SetOptions(merge: true));
+        .add(
+      {
+        'docid': user.uid,
+        'user':user.email,
+        'name': _nameController.text,
+        'email': widget.email,
+        'useremail': user.email,
+        'phone': _phoneController.text,
+        'description': _descriptionController.text,
+        'doctor': _doctorController.text,
+        'date': DateTime.parse(dateUTC + ' ' + date_Time + ':00'),
+        'valide':false,
+      },
+    );
+      FirebaseFirestore.instance.collection('appointments-doc').add({
+        'user':user.email,
+        'name': _nameController.text,
 
-    FirebaseFirestore.instance
-        .collection('appointments')
-        .doc(user.email)
-        .collection('all')
-        .doc()
-        .set({
+        'useremail': user.email,
+        'email': widget.email,
+        'phone': _phoneController.text,
+        'description': _descriptionController.text,
+        'doctor': _doctorController.text,
+        'date': DateTime.parse(dateUTC + ' ' + date_Time + ':00'),
+        'valide':false,
+      });
+    FirebaseFirestore.instance.collection('appointments-pat').doc(user.email).collection('all-doc').add({
+      'user':user.email,
       'name': _nameController.text,
+      'email': widget.email,
       'phone': _phoneController.text,
       'description': _descriptionController.text,
       'doctor': _doctorController.text,
       'date': DateTime.parse(dateUTC + ' ' + date_Time + ':00'),
-    }, SetOptions(merge: true));
+      'valide':false,
+    });
+
+    /*  FirebaseFirestore.instance.collection('appointments-all').doc().set({
+        'user':user.email,
+        'name': _nameController.text,
+
+        'useremail': user.email,
+        'email': widget.email,
+        'phone': _phoneController.text,
+        'description': _descriptionController.text,
+        'doctor': _doctorController.text,
+        'date': DateTime.parse(dateUTC + ' ' + date_Time + ':00'),
+        'valide':false,
+      }, SetOptions(merge: true));
+
+*/
+
+  }
+  Future<void> _Update() async {
+    FirebaseFirestore.instance.
+          collection('appointments')
+        .doc(user.email)
+        .collection('pending')
+        .doc()
+        .update({
+      'docid': user.uid,
+      'user':user.email,
+      'name': _nameController.text,
+      'email': widget.email,
+      'useremail': user.email,
+      'phone': _phoneController.text,
+      'description': _descriptionController.text,
+      'doctor': _doctorController.text,
+      'date': DateTime.parse(dateUTC + ' ' + date_Time + ':00'),
+
+
+
+        }).then((_) => print('Success'))
+        .catchError((error) => print('Failed: $error'));
+
+
   }
 }

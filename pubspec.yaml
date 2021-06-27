@@ -34,8 +34,13 @@ dev_dependencies:
     sdk: flutter
   firebase_auth:
   cloud_firestore:
-  firebase_storage:
   image_picker:
+  firebase_core:
+  favorite_button:
+  flutter_material_pickers:
+  cached_network_image:
+  shared_preferences:
+  firebase_storage:
   file_picker:
   scroll_snap_list:
   google_fonts:
@@ -49,7 +54,12 @@ dev_dependencies:
   quick_actions:
   provider:
   get:
+  firebase_database:
+  firebase_analytics:
+  permission_handler:
+  introduction_screen:
   flutter_form_builder:
+  syncfusion_flutter_calendar:
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 

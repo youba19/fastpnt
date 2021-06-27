@@ -1,3 +1,6 @@
+import 'dart:io';
+import 'package:fastpnt/Screens/Signin2.dart';
+import 'package:path/path.dart' as path;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fastpnt/Screens/signIn.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -5,28 +8,34 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/cupertino.dart';
 
-import 'Register_Medcin.dart';
-
-
-class Register extends StatefulWidget {
+class RegisterM extends StatefulWidget {
   @override
-  _RegisterState createState() => _RegisterState();
+  _RegisterMState createState() => _RegisterMState();
 }
 
-class _RegisterState extends State<Register> {
+class _RegisterMState extends State<RegisterM> {
   FirebaseAuth _auth = FirebaseAuth.instance;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _displayName = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _adreesseController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _passwordConfirmController =
-      TextEditingController();
+  TextEditingController();
 
   FocusNode f1 = new FocusNode();
   FocusNode f2 = new FocusNode();
   FocusNode f3 = new FocusNode();
   FocusNode f4 = new FocusNode();
+  FocusNode f5 = new FocusNode();
 
   bool _isSuccess;
 
@@ -36,6 +45,75 @@ class _RegisterState extends State<Register> {
     _passwordController.dispose();
     super.dispose();
   }
+
+  List<ListItem> _dropdownItems = [
+    ListItem(1, "Généraliste"),
+    ListItem(2, "Pédiatre"),
+    ListItem(3, "Dentiste"),
+    ListItem(4, "Ophtalmologue"),
+    ListItem(4, "Dermatologue"),
+    ListItem(4, "Cardiologue"),
+    ListItem(4, "Gynécologue")
+  ];
+  List<DropdownMenuItem<ListItem>> _dropdownMenuItems;
+  ListItem _selectedItem;
+
+  void initState() {
+    super.initState();
+    _dropdownMenuItems = buildDropDownMenuItems(_dropdownItems);
+    _selectedItem = _dropdownMenuItems[0].value;
+  }
+
+  List<DropdownMenuItem<ListItem>> buildDropDownMenuItems(List listItems) {
+    List<DropdownMenuItem<ListItem>> items = List();
+    for (ListItem listItem in listItems) {
+      items.add(
+        DropdownMenuItem(
+          child: Text(listItem.name, style: TextStyle(color: Colors.blue)),
+          value: listItem,
+        ),
+      );
+    }
+    return items;
+  }
+
+
+  List gender = ["Male", "Female"];
+
+  String select;
+
+  Row addRadioButton(int btnValue, String title) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: <Widget>[
+        Radio(
+          activeColor: Theme
+              .of(context)
+              .primaryColor,
+          value: gender[btnValue],
+          groupValue: select,
+          onChanged: (value) {
+            setState(() {
+              print(value);
+              select = value;
+            });
+          },
+        ),
+        Text(title)
+      ],
+    );
+  }
+
+  UploadTask task;
+  UploadTask task1;
+  File file;
+  File filee;
+
+  String usenamer;
+  String adr;
+  String urlDownload;
+  String urlDownload1;
+
 
   @override
   Widget build(BuildContext context) {
@@ -65,6 +143,12 @@ class _RegisterState extends State<Register> {
   }
 
   Widget _signUp() {
+    final fileName = file != null
+        ? path.basename(file.path)
+        : 'pas de fichier choisi';
+    final fileName1 = filee != null
+        ? path.basename(filee.path)
+        : 'pas de photo choisi';
     return Form(
       key: _formKey,
       child: Padding(
@@ -231,6 +315,9 @@ class _RegisterState extends State<Register> {
               ),
               onFieldSubmitted: (value) {
                 f4.unfocus();
+                if (_passwordConfirmController.text.isEmpty) {
+                  FocusScope.of(context).requestFocus(f5);
+                }
               },
               textInputAction: TextInputAction.done,
               validator: (value) {
@@ -244,6 +331,134 @@ class _RegisterState extends State<Register> {
               },
               obscureText: true,
             ),
+            SizedBox(
+              height: 25.0,
+            ),
+            TextFormField(
+              focusNode: f5,
+              style: GoogleFonts.lato(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+              ),
+              keyboardType: TextInputType.emailAddress,
+              controller: _adreesseController,
+              decoration: InputDecoration(
+                contentPadding: EdgeInsets.only(left: 20, top: 10, bottom: 10),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(90.0)),
+                  borderSide: BorderSide.none,
+                ),
+                filled: true,
+                fillColor: Colors.grey[350],
+                hintText: 'Adresse de cabinet ou clinique',
+                hintStyle: GoogleFonts.lato(
+                  color: Colors.black26,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              onFieldSubmitted: (value) {
+                f5.unfocus();
+              },
+              textInputAction: TextInputAction.next,
+              validator: (value) {
+                if (value.isEmpty) return 'Please enter the Adress';
+                return null;
+              },
+            ),
+            SizedBox(
+              height: 25.0,
+            ),
+            Row(
+              children: <Widget>[
+                Text("Entrez votre Spécialité:             ",
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+                Container(
+                  padding: const EdgeInsets.only(left: 10.0, right: 10.0),
+                  height: 35,
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10.0),
+                      color: Colors.white,
+
+                      border: Border.all()),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton(
+
+                        value: _selectedItem,
+                        items: _dropdownMenuItems,
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedItem = value;
+                          });
+                          print(_selectedItem.name);
+                        }),
+                  ),
+                ),
+
+
+              ],
+            ),
+            SizedBox(
+              height: 25.0,
+            ),
+            Row(
+              children: <Widget>[
+                Text("Entrez votre Diplome:   ",
+                  style: TextStyle(fontWeight: FontWeight.bold),),
+                Column(
+                  children: <Widget>[
+                    OutlinedButton.icon(
+                      onPressed: selectFile,
+                      icon: Icon(Icons.link, size: 18, color: Colors.black,),
+                      label: Text("Choisir un fichier",
+                        style: TextStyle(color: Colors.black),),
+                    ),
+                    Text(fileName),
+                  ],
+                ),
+                /* OutlinedButton.icon(
+                            onPressed:c,
+                            icon: Icon(Icons.upload_file, size: 18),
+                            label: Text("upload"),
+
+                          ),*/
+              ],
+            ),
+            SizedBox(
+              height: 10.0,
+            ),
+            Row(
+              children: <Widget>[
+                Text("Entrez votre photo:      ",
+                  style: TextStyle(fontWeight: FontWeight.bold),),
+                Column(
+                  children: <Widget>[
+                    OutlinedButton.icon(
+                      onPressed: selectFile1,
+                      icon: Icon(Icons.link, size: 18, color: Colors.black,),
+                      label: Text("Choisir une photo",
+                        style: TextStyle(color: Colors.black),),
+                    ),
+                    Text(fileName1),
+                  ],
+                ),
+                /* OutlinedButton.icon(
+                            onPressed:c,
+                            icon: Icon(Icons.upload_file, size: 18),
+                            label: Text("upload"),
+
+                          ),*/
+              ],
+            ),
+            Row(
+              children: <Widget>[
+                addRadioButton(0, 'Male'),
+                addRadioButton(1, 'Female'),
+
+              ],
+            ),
+
+
             Container(
               padding: const EdgeInsets.only(top: 25.0),
               child: SizedBox(
@@ -259,9 +474,24 @@ class _RegisterState extends State<Register> {
                     ),
                   ),
                   onPressed: () async {
+                    if(file == null && filee == null) return;
+                    final fileName =path.basename(file.path);
+                    final destination='files/$fileName';
+                    task =  FirebaseApi.uploadFile(destination,file);
+                    final fileName1 =path.basename(filee.path);
+                    final destination1='files/$fileName1';
+                    task =  FirebaseApi.uploadFile(destination1,filee);
+                    if(task1 != null) {
+                      final snapshot =await task1.whenComplete(() {} );
+                      urlDownload1= await snapshot.ref.getDownloadURL();
+                    }
+                    print(urlDownload1);
+
                     if (_formKey.currentState.validate()) {
                       showLoaderDialog(context);
                       _registerAccount();
+                      print(urlDownload);
+                      print(urlDownload1);
                     }
                   },
                   style: ElevatedButton.styleFrom(
@@ -277,46 +507,15 @@ class _RegisterState extends State<Register> {
             ),
             Container(
               padding: EdgeInsets.only(top: 25, left: 10, right: 10),
-              width: MediaQuery.of(context).size.width,
+              width: MediaQuery
+                  .of(context)
+                  .size
+                  .width,
               child: Divider(
                 thickness: 1.5,
               ),
             ),
-            Container(
-              padding: EdgeInsets.only(top: 25),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                        color: Colors.red[700],
-                        borderRadius: BorderRadius.circular(32)),
-                    child: IconButton(
-                      icon: Icon(
-                        FlutterIcons.google_ant,
-                        color: Colors.white,
-                      ),
-                      onPressed: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: 30,
-                  ),
-                  Container(
-                    decoration: BoxDecoration(
-                        color: Colors.blue[900],
-                        borderRadius: BorderRadius.circular(32)),
-                    child: IconButton(
-                      icon: Icon(
-                        FlutterIcons.facebook_f_faw,
-                        color: Colors.white,
-                      ),
-                      onPressed: () {},
-                    ),
-                  )
-                ],
-              ),
-            ),
+
             Container(
               child: Padding(
                 padding: const EdgeInsets.only(top: 5.0),
@@ -334,8 +533,8 @@ class _RegisterState extends State<Register> {
                     TextButton(
                       style: ButtonStyle(
                           overlayColor:
-                              MaterialStateProperty.all(Colors.transparent)),
-                      onPressed: () => _pushPage(context, SignIn()),
+                          MaterialStateProperty.all(Colors.transparent)),
+                      onPressed: () => _pushPage(context, Login()),
                       child: Text(
                         'Sign in',
                         style: GoogleFonts.lato(
@@ -345,13 +544,10 @@ class _RegisterState extends State<Register> {
                         ),
                       ),
                     ),
-
                   ],
                 ),
               ),
             ),
-
-
           ],
         ),
       ),
@@ -419,7 +615,7 @@ class _RegisterState extends State<Register> {
 
   bool emailValidate(String email) {
     if (RegExp(
-            r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+        r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
         .hasMatch(email)) {
       return true;
     } else {
@@ -438,7 +634,7 @@ class _RegisterState extends State<Register> {
       );
     } catch (error) {
       if (error.toString().compareTo(
-              '[firebase_auth/email-already-in-use] The email address is already in use by another account.') ==
+          '[firebase_auth/email-already-in-use] The email address is already in use by another account.') ==
           0) {
         showAlertDialog(context);
         print(
@@ -454,13 +650,16 @@ class _RegisterState extends State<Register> {
       }
       await user.updateProfile(displayName: _displayName.text);
 
-      FirebaseFirestore.instance.collection('patient').doc(user.uid).set({
+      FirebaseFirestore.instance.collection('Medcin').doc(user.uid).set({
         'name': _displayName.text,
-        'birthDate': null,
+        'bio': '',
         'email': user.email,
-        'phone': null,
-        'bio': null,
-        'city': null,
+        'phone': '',
+        'specialite':_selectedItem.name,
+        'adr': _adreesseController.text,
+        'diplome':urlDownload,
+        'valide': false,
+        'img': urlDownload1
       }, SetOptions(merge: true));
 
       Navigator.of(context)
@@ -475,4 +674,41 @@ class _RegisterState extends State<Register> {
       MaterialPageRoute<void>(builder: (_) => page),
     );
   }
+
+
+  Future selectFile() async {
+    final result = await FilePicker.platform.pickFiles(allowMultiple: false);
+    if (result == null) return;
+    final path = result.files.single.path;
+    setState(() {
+      file = File(path);
+    });
+  }
+  Future selectFile1() async {
+    final result = await FilePicker.platform.pickFiles(allowMultiple: false);
+    if (result == null) return;
+    final path1 = result.files.single.path;
+    setState(() {
+      filee = File(path1);
+    });
+  }
+
+}
+
+class FirebaseApi {
+  static UploadTask uploadFile(String destination , File file){
+    try{
+      final ref = FirebaseStorage.instance.ref(destination);
+      return ref.putFile(file);
+    } on  FirebaseException catch (e){
+      return null;
+    }
+
+  }
+}
+class ListItem {
+  int value;
+  String name;
+
+  ListItem(this.value, this.name);
 }

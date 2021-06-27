@@ -29,7 +29,7 @@ class _MformulState extends State<Mformul> {
       try {
 
         await _firebaseAuth.createUserWithEmailAndPassword(email: email, password: password);
-        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (ctx)=>Login()));
+        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (ctx)=>Login1()));
       } on PlatformException catch (e){
         print(e.message.toString());
 

@@ -11,15 +11,19 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 
+import 'MedcinSettings.dart';
 
-class UserProfile extends StatefulWidget {
-  const UserProfile({Key key}) : super(key: key);
+
+class MedcinProfile extends StatefulWidget {
+final String Name;
+
+  const MedcinProfile({Key key, this.Name}) : super(key: key);
 
   @override
   _UserProfileState createState() => _UserProfileState();
 }
 
-class _UserProfileState extends State<UserProfile> {
+class _UserProfileState extends State<MedcinProfile> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   FirebaseAuth _auth = FirebaseAuth.instance;
   User user;
@@ -78,7 +82,7 @@ class _UserProfileState extends State<UserProfile> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => UserSettings(),
+                                  builder: (context) => MedcinSettings(),
                                 ),
                               );
                             },
@@ -90,7 +94,7 @@ class _UserProfileState extends State<UserProfile> {
                         height: MediaQuery.of(context).size.height / 5,
                         padding: EdgeInsets.only(top: 75),
                         child: Text(
-                          user.displayName,
+                          widget.Name,
                           style: GoogleFonts.lato(
                             fontSize: 25,
                             fontWeight: FontWeight.bold,
@@ -192,77 +196,8 @@ class _UserProfileState extends State<UserProfile> {
                   ],
                 ),
               ),
-              Container(
-                margin: EdgeInsets.only(left: 15, right: 15, top: 20),
-                padding: EdgeInsets.only(left: 20, top: 20, bottom: 20),
-                width: MediaQuery.of(context).size.width,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  color: Colors.blueGrey[50],
-                ),
-                child: InkWell(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => PrevMedRecords()),
-                    );
-                  },
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "See Previous Medical Records",
-                        style: GoogleFonts.lato(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
-                      ),
-                      SizedBox(
-                        width: 5,
-                      ),
-                      Icon(Icons.chevron_right_rounded),
-                    ],
-                  ),
-                ),
-              ),
-              Container(
-                margin: EdgeInsets.only(left: 15, right: 15, top: 20),
-                padding: EdgeInsets.only(left: 20, top: 20, bottom: 20),
-                width: MediaQuery.of(context).size.width,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  color: Colors.blueGrey[50],
-                ),
-                child: InkWell(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => PrevPrescriptionUser()),
-                    );
-                  },
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "See Previous Prescriptions",
-                        style: GoogleFonts.lato(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
-                      ),
-                      SizedBox(
-                        width: 5,
-                      ),
-                      Icon(Icons.chevron_right_rounded)
-                    ],
-                  ),
-                ),
 
-                
-              ),
+
               Container(
                 margin: EdgeInsets.only(left: 15, right: 15, top: 20),
                 padding: EdgeInsets.only(left: 20, top: 20),

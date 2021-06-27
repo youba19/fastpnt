@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'Screens/covid19.dart';
 import 'Screens/disease.dart';
 import 'Screens/diseasedetail.dart';
 import 'models/bannerModel.dart';
@@ -39,7 +40,7 @@ class Carouselslider extends StatelessWidget {
                     }))
                     : Navigator.push(context,
                     MaterialPageRoute(builder: (BuildContext context) {
-                      return DiseaseDetail(disease: 'Covid-19');
+                      return MyHomePage();
                     }));
               },
               child: Stack(

@@ -1,18 +1,16 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fastpnt/firestore-data/MyfavoriteList.dart';
 import 'package:fastpnt/firestore-data/myAppointmentList.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class MyAppointments extends StatefulWidget {
-  final String email;
-
-  const MyAppointments({Key key, this.email}) : super(key: key);
+class MyFavorite extends StatefulWidget {
   @override
   _MyAppointmentsState createState() => _MyAppointmentsState();
 }
 
-class _MyAppointmentsState extends State<MyAppointments> {
+class _MyAppointmentsState extends State<MyFavorite> {
   FirebaseAuth _auth = FirebaseAuth.instance;
   User user;
 
@@ -36,7 +34,7 @@ class _MyAppointmentsState extends State<MyAppointments> {
           alignment: Alignment.center,
           padding: EdgeInsets.symmetric(vertical: 10),
           child: Text(
-            'My Appointments',
+            'Favorite List',
             style: GoogleFonts.lato(
               color: Colors.black,
               fontWeight: FontWeight.bold,
@@ -47,7 +45,7 @@ class _MyAppointmentsState extends State<MyAppointments> {
       ),
       body: Container(
         padding: EdgeInsets.only(right: 10, left: 10, top: 10),
-        child: MyAppointmentList(email: widget.email,),
+        child: ListFav(),
       ),
     );
   }

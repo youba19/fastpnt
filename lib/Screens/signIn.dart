@@ -1,9 +1,12 @@
+import 'package:fastpnt/Screens/Signin2.dart';
 import 'package:fastpnt/Screens/register.dart';
+import 'package:fastpnt/Screens/restPass.dart';
 import 'package:fastpnt/Screens/signup.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../mainPage.dart';
 
@@ -59,6 +62,7 @@ class _SignInState extends State<SignIn> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
+
             SizedBox(
               width: double.infinity,
               child: Container(
@@ -78,6 +82,20 @@ class _SignInState extends State<SignIn> {
                 style: GoogleFonts.lato(
                   fontSize: 30,
                   fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            TextButton(
+              style: ButtonStyle(
+                  overlayColor:
+                  MaterialStateProperty.all(Colors.transparent)),
+              onPressed: () => _pushPage(context, Login()),
+              child: Text(
+                'Je suis un Medcin',
+                style: GoogleFonts.lato(
+                  fontSize: 20,
+                  color: Colors.indigo[700],
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
@@ -194,7 +212,9 @@ class _SignInState extends State<SignIn> {
                 style: ButtonStyle(
                     overlayColor:
                         MaterialStateProperty.all(Colors.transparent)),
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(context,MaterialPageRoute(builder:(context)=> RestPass()));
+                },
                 child: Text(
                   'Forgot Password?',
                   style: GoogleFonts.lato(
@@ -324,10 +344,18 @@ class _SignInState extends State<SignIn> {
       if (!user.emailVerified) {
         await user.sendEmailVerification();
       }
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => MainPage()),
-      );
+      final QuerySnapshot result = await FirebaseFirestore.instance
+          .collection('patient')
+          .where('email', isEqualTo: user.email)
+          .limit(1)
+          .get();
+      final List<DocumentSnapshot> documents = result.docs;
+      print(documents.length);
+      if(documents.length==1){
+
+        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (ctx)=>MainPage()));
+      }
+
     /*Navigator.of(context)
           .push()pushNamedAndRemoveUntil('/home', (Route<dynamic> route) => false);*/
     } catch (e) {

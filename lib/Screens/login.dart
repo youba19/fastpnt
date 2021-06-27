@@ -5,7 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 import 'home.dart';
-class Login extends StatefulWidget {
+class Login1 extends StatefulWidget {
   @override
 
 
@@ -20,7 +20,7 @@ String email="";
 String password="";
 
 @override
-class _LoginState extends State<Login> {
+class _LoginState extends State<Login1> {
 
   Future<void> validation() async {
    // final FormState? _form=_formKey.currentState;

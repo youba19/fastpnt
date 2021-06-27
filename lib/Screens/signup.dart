@@ -25,7 +25,7 @@ class _SignUpState extends State<SignUp> {
       try {
 
         await _firebaseAuth.createUserWithEmailAndPassword(email: email, password: password);
-        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (ctx)=>Login()));
+        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (ctx)=>Login1()));
       } on PlatformException catch (e){
         print(e.message.toString());
 
@@ -213,7 +213,7 @@ class _SignUpState extends State<SignUp> {
                           SizedBox(width: 10,),
                           GestureDetector(
                               onTap: () {
-                                Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (ctx)=>Login()));
+                                Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (ctx)=>Login1()));
                               },
                               child:Text("connexion",style: TextStyle(color: Colors.cyan,fontSize: 20,fontWeight:FontWeight.bold ),)
                           )

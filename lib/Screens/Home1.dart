@@ -1,12 +1,13 @@
 import 'dart:async';
 import 'dart:ui';
-import 'package:fastpnt/Screens/home.dart';
+
+import 'package:fastpnt/Screens/favorite.dart';
 import 'package:fastpnt/firestore-data/notificationList.dart';
 import 'package:fastpnt/firestore-data/searchList.dart';
 import 'package:fastpnt/firestore-data/topRatedList.dart';
 import 'package:fastpnt/models/cardModel.dart';
 import 'package:flutter/painting.dart';
-
+import 'package:favorite_button/favorite_button.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -77,8 +78,21 @@ class _HomePageState extends State<HomePage> {
         title: Container(
           padding: EdgeInsets.only(top: 5),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
+              IconButton(
+                splashRadius: 20,
+                icon: Icon(Icons.favorite,color: Colors.red,),
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (contex) => MyFavorite()));
+                },
+              ),
+              SizedBox(
+                width: 55,
+              ),
               Container(
                 //width: MediaQuery.of(context).size.width/1.3,
                 alignment: Alignment.center,

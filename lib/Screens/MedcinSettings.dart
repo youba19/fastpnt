@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:fastpnt/firestore-data/MedcinDetail.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -12,12 +13,12 @@ import 'package:firebase_storage/firebase_storage.dart'; // For File Upload To F
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart'; // For Image Picker
 import 'package:path/path.dart' as Path;
-class UserSettings extends StatefulWidget {
+class MedcinSettings extends StatefulWidget {
   @override
   _UserSettingsState createState() => _UserSettingsState();
 }
 
-class _UserSettingsState extends State<UserSettings> {
+class _UserSettingsState extends State<MedcinSettings> {
   UserDetails detail = new UserDetails();
 
   FirebaseAuth _auth = FirebaseAuth.instance;
@@ -54,10 +55,10 @@ class _UserSettingsState extends State<UserSettings> {
               Icons.arrow_back_ios,
               color: Colors.indigo,
             ),
-           onPressed: (){
-             Navigator.pop(context);
+            onPressed: (){
+              Navigator.pop(context);
 
-           },
+            },
           ),
         ),
         title: Text(
@@ -69,7 +70,8 @@ class _UserSettingsState extends State<UserSettings> {
       body: Column(
         children: [
 
-          UserDetails(),
+          MedcinDetails(),
+
           Container(
             margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             padding: EdgeInsets.symmetric(horizontal: 14),
